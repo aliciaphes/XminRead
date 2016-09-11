@@ -14,7 +14,6 @@
 
         <activity android:name=".MainActivity">
 
-
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -24,6 +23,12 @@
                 <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <!--<category android:name="android.intent.category.APP_BROWSER" />-->
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+            <!--            add this to be able to share URL to app -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="text/plain" />
             </intent-filter>
         </activity>
