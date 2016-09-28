@@ -8,6 +8,7 @@ public class Article {
 
     public void Article(){
         title = "";
+        url = "";
         content = "";
     }
 

@@ -9,7 +9,9 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import org.adw.library.widgets.discreteseekbar.DiscreteSeekBar;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -18,10 +20,16 @@ import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
 
-    private TextView url_tv;
+    private TextView urlTextView;
     private Article article;
 
     String body; //deleteeeeeeeeeeeee
+
+    private int ReadingSpeed;//in wpm
+    //average adult =300
+    //400
+    //elevate
+    //200, 300, 400 and 500
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,11 +37,11 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         article = new Article();
-        url_tv = (TextView) findViewById(R.id.url);
+        urlTextView = (TextView) findViewById(R.id.url);
 
         boolean connected = checkNetworkConnection();
         if (!connected) {
-            url_tv.setText("No network connection available.");
+            urlTextView.setText("No network connection available.");
         } else {
             calculateMinutes();
 
@@ -42,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setSeekBarListener() {
-        SeekBar sb = (SeekBar) findViewById(R.id.seekBar);
+        SeekBar sb = (SeekBar) findViewById(R.id.seekbar);
 
         sb.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -57,10 +65,36 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                //get value and recalculate minutes
+                int currentValue = seekBar.getProgress() - 200;
+                Toast.makeText(MainActivity.this, String.valueOf(currentValue), Toast.LENGTH_LONG).show();
+            }
+        });
+
+        DiscreteSeekBar dsb = (DiscreteSeekBar) findViewById(R.id.discrete_seekbar);
+        dsb.setOnProgressChangeListener(new DiscreteSeekBar.OnProgressChangeListener() {
+            @Override
+            public void onProgressChanged(DiscreteSeekBar seekBar, int value, boolean fromUser) {
+                //Toast.makeText(MainActivity.this, "onprogresschanged", Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onStartTrackingTouch(DiscreteSeekBar seekBar) {
+                //Toast.makeText(MainActivity.this, "onstarttrackingtouch", Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onStopTrackingTouch(DiscreteSeekBar seekBar) {
+                Toast.makeText(MainActivity.this, "onstoptrackingtouch", Toast.LENGTH_LONG).show();
+                //retrieve value
+                int p = seekBar.getProgress();
+                Toast.makeText(MainActivity.this, String.valueOf(p), Toast.LENGTH_LONG).show();
             }
         });
     }
+
+
+
+
 
     private void useJsoup(String url) {
         try {
@@ -91,7 +125,10 @@ public class MainActivity extends AppCompatActivity {
         String stringUrl;
         if (getIntent().getAction().equals(Intent.ACTION_SEND)) {
             stringUrl = getIntent().getStringExtra(Intent.EXTRA_TEXT);
-            new ArticleAnalyzerTask().execute(stringUrl);
+            if (stringUrl.length() != 0) {
+                new ArticleAnalyzerTask().execute(stringUrl);
+            }
+            //else show some message asking to go to browser
         }
     }
 
@@ -109,6 +146,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     public class ArticleAnalyzerTask extends AsyncTask<String, Void, Void> {//3rd parameter:ArrayList<String>
+
         @Override
         protected Void doInBackground(String... urls) {
             // params comes from the execute() call: params[0] is the url.
@@ -126,9 +164,9 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(Void v) {
             //calculate minutes and show on screen
             //float minutes = countWords(result);
-            //url_tv.setText(String.format("%d", minutes));
+            //urlTextView.setText(String.format("%d", minutes));
 
-            //url_tv.setText(result.get(0));
+            //urlTextView.setText(result.get(0));
             String content = article.getContent();
             TextView tv_content = (TextView) findViewById(R.id.content);
             //tv_content.setText(content);
@@ -136,12 +174,12 @@ public class MainActivity extends AppCompatActivity {
             TextView tv_title = (TextView) findViewById(R.id.title);
             tv_title.setText(article.getTitle());
 
-            url_tv.setText(article.getUrl());
+            urlTextView.setText(article.getUrl());
 
             //Toast.makeText(MainActivity.this, body, Toast.LENGTH_LONG).show();
 
             //Toast.makeText(MainActivity.this, article.getUrl(), Toast.LENGTH_LONG).show();
-            //url_tv.setText("We want to read from " + article.getUrl());
+            //urlTextView.setText("We want to read from " + article.getUrl());
 
             int words = countWords(article.getContent());
             tv_content.setText(String.valueOf(words));
@@ -161,8 +199,6 @@ public class MainActivity extends AppCompatActivity {
             }
             return parts.length;
         }
-
-
 
 
 //        protected String downloadUrl(String stringUrl) throws IOException {
@@ -196,9 +232,6 @@ public class MainActivity extends AppCompatActivity {
 //            //return "<html></html>"; //for now
 //            return contentAsString; //THIS IS THE REAL RETURN, UNCOMMENT
 //        }
-
-
-
 
 
 //        // Reads an InputStream and converts it to a String.
